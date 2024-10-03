@@ -9,7 +9,7 @@ export const WeatherSvc = {
         return ajaxXHR(url)
     },
     getGeo: (args: { lat: number; lon: number }): Promise<T_WeatherGeo[]> => {
-        const url = `http://api.openweathermap.org/geo/1.0/reverse?lat=${args.lat}&lon=${args.lon}&limit=1&appid=${process.env.NEXT_PUBLIC_OPEN_WEATHER_API}`
+        const url = `https://api.openweathermap.org/geo/1.0/reverse?lat=${args.lat}&lon=${args.lon}&limit=1&appid=${process.env.NEXT_PUBLIC_OPEN_WEATHER_API}`
         return ajaxXHR(url)
     }
 }
