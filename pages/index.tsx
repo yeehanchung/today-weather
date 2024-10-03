@@ -13,7 +13,7 @@ import {
 import { generateUniqueId, sleep } from "@app/src/utils/helpers"
 import { useLocalStorageForUrlQueries } from "@app/src/utils/local-storage"
 import { useRouter } from "next/router"
-import { HtmlHTMLAttributes, PropsWithChildren, useRef, useState } from "react"
+import { HtmlHTMLAttributes, PropsWithChildren, useState } from "react"
 import { FormProvider, useForm } from "react-hook-form"
 
 export const FORM_ERROR: {
@@ -30,7 +30,6 @@ export const FORM_ERROR: {
 
 export default function YourComponentName(): JSX.Element {
     const router = useRouter()
-    const previousValue = useRef<string>("")
     const formMethods = useForm<{
         city: string
         country: string
@@ -74,14 +73,33 @@ export default function YourComponentName(): JSX.Element {
                 JSON.stringify(localStorageItem.data.record)
             )
 
-            clonedData.push({
-                data: {
-                    weather: args.data.weather,
-                    geo: args.data.geo
-                },
-                id: generateUniqueId(),
-                time: new Date()
-            })
+            if (
+                clonedData.find(
+                    (v) => v.data.weather.name === args.data.weather.name
+                )
+            ) {
+                for (let idx = 0; idx < clonedData.length; idx++) {
+                    if (
+                        clonedData[idx].data.weather.name ===
+                        args.data.weather.name
+                    ) {
+                        clonedData[idx] = {
+                            data: args.data,
+                            id: generateUniqueId(),
+                            time: new Date()
+                        }
+                    }
+                }
+            } else {
+                clonedData.push({
+                    data: {
+                        weather: args.data.weather,
+                        geo: args.data.geo
+                    },
+                    id: generateUniqueId(),
+                    time: new Date()
+                })
+            }
 
             setSessionStorageItem({
                 record: clonedData
@@ -91,14 +109,14 @@ export default function YourComponentName(): JSX.Element {
         }
     }
 
-    const onSearchCityOrCountry = formMethods.handleSubmit(async (formData) => {
+    const onSubmit = async (formData: { country: string; city: string }) => {
         try {
             let query
 
             if (formData.city && !formData.country) {
                 query = formData.city
             } else if (formData.city && formData.country) {
-                query = `${formData.country},${formData.city}`
+                query = formData.city
             } else if (!formData.city && formData.country) {
                 query = formData.country
             }
@@ -106,8 +124,6 @@ export default function YourComponentName(): JSX.Element {
             if (!query) {
                 throw new Error(FORM_ERROR["all_empty_query"])
             }
-
-            previousValue.current = query
 
             const [xhrWeather, _] = await Promise.all([
                 WeatherSvc.getWeather({
@@ -117,11 +133,11 @@ export default function YourComponentName(): JSX.Element {
             ])
 
             const geo = await WeatherSvc.getGeo({
-                lat: xhrWeather.data.coord.lat,
-                lon: xhrWeather.data.coord.lon
+                lat: xhrWeather.coord.lat,
+                lon: xhrWeather.coord.lon
             })
 
-            const geoData = Array.isArray(geo.data) ? geo.data[0] : null
+            const geoData = Array.isArray(geo) ? geo[0] : null
 
             // Handle when city entered is not a city
             if (
@@ -135,13 +151,13 @@ export default function YourComponentName(): JSX.Element {
             handleLocalStorage({
                 isSuccess: true,
                 data: {
-                    weather: xhrWeather.data,
+                    weather: xhrWeather,
                     geo: geoData
                 }
             })
             setWeatherData({
                 fetchState: "post",
-                data: createDisplayableWeatherData(xhrWeather.data)
+                data: createDisplayableWeatherData(xhrWeather)
             })
         } catch (error) {
             const errorMessage = (error as Error).message
@@ -185,7 +201,7 @@ export default function YourComponentName(): JSX.Element {
                 data: null
             })
         }
-    })
+    }
 
     return (
         <>
@@ -198,7 +214,9 @@ export default function YourComponentName(): JSX.Element {
 
                 <FormProvider {...formMethods}>
                     <div style={{ minHeight: "20rem" }}>
-                        <SearchToolbar onSubmit={onSearchCityOrCountry} />
+                        <SearchToolbar
+                            onSubmit={formMethods.handleSubmit(onSubmit)}
+                        />
                         <SearchDetails weatherData={weatherData} />
                     </div>
 
@@ -206,13 +224,7 @@ export default function YourComponentName(): JSX.Element {
                         <div className="w-full px-4 sm:px-4 pt-10">
                             <SearchHistory
                                 historySources={localStorageItem.data.record}
-                                onClickHistory={(history) => {
-                                    setWeatherData({
-                                        fetchState: "post",
-                                        data: createDisplayableWeatherData(
-                                            history.data.weather
-                                        )
-                                    })
+                                onClickHistory={async ({ history, e }) => {
                                     router.push({
                                         query: {
                                             city: history.data.weather.name,
@@ -220,6 +232,8 @@ export default function YourComponentName(): JSX.Element {
                                                 history.data.weather.sys.country
                                         }
                                     })
+                                    await sleep(10)
+                                    formMethods.handleSubmit(onSubmit)(e)
                                 }}
                                 onDelete={(id) => {
                                     const clonedData: T_WeatherDatabaseRecords =

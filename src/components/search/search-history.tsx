@@ -4,11 +4,15 @@ import { Header } from "@app/src/designs/header"
 import { T_WeatherDatabaseRecords } from "@app/src/domains/weather/weather.type"
 import { getTitleCaseText } from "@app/src/utils/helpers"
 import { format } from "date-fns"
+import { MouseEvent } from "react"
 
 type T_Props = {
     historySources: T_WeatherDatabaseRecords
     onDelete: (id: string) => void
-    onClickHistory: (history: T_WeatherDatabaseRecords[number]) => void
+    onClickHistory: (args: {
+        e: MouseEvent<HTMLDivElement>
+        history: T_WeatherDatabaseRecords[number]
+    }) => void
 }
 
 export function SearchHistory(props: T_Props): JSX.Element {
@@ -55,8 +59,11 @@ export function SearchHistory(props: T_Props): JSX.Element {
                                 <div
                                     key={idx}
                                     className="row--search-history hover:bg-gray-100 cursor-pointer relative"
-                                    onClick={() => {
-                                        props.onClickHistory(source)
+                                    onClick={(e) => {
+                                        props.onClickHistory({
+                                            e,
+                                            history: source
+                                        })
                                     }}>
                                     <Row className="pt-3 pb-2 px-4 sm:px-4 flex flex-auto align-middle items-center md:flex-nowrap gap-2">
                                         <Col className=" w-full">
