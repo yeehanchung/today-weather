@@ -66,6 +66,7 @@ export type T_WeatherDisplayableData = {
 export type T_WeatherDatabaseRecords = Array<{
     time: Date
     id: string
+    searchBy: "city" | "country"
     data: { weather: T_WeatherDto } & { geo: T_WeatherGeo | null }
 }>
 

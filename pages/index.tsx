@@ -28,7 +28,7 @@ export const FORM_ERROR: {
     city_invalid_city: "city: invalid-city"
 }
 
-export default function YourComponentName(): JSX.Element {
+export default function Homepage(): JSX.Element {
     const router = useRouter()
     const formMethods = useForm<{
         city: string
@@ -62,7 +62,11 @@ export default function YourComponentName(): JSX.Element {
         args:
             | {
                   isSuccess: true
-                  data: { weather: T_WeatherDto; geo: T_WeatherGeo | null }
+                  data: {
+                      weather: T_WeatherDto
+                      geo: T_WeatherGeo | null
+                      searchBy: T_WeatherDatabaseRecords[number]["searchBy"]
+                  }
               }
             | { isSuccess: false; data: null }
     ) {
@@ -86,7 +90,8 @@ export default function YourComponentName(): JSX.Element {
                         clonedData[idx] = {
                             data: args.data,
                             id: generateUniqueId(),
-                            time: new Date()
+                            time: new Date(),
+                            searchBy: args.data.searchBy
                         }
                     }
                 }
@@ -97,7 +102,8 @@ export default function YourComponentName(): JSX.Element {
                         geo: args.data.geo
                     },
                     id: generateUniqueId(),
-                    time: new Date()
+                    time: new Date(),
+                    searchBy: args.data.searchBy
                 })
             }
 
@@ -111,14 +117,18 @@ export default function YourComponentName(): JSX.Element {
 
     const onSubmit = async (formData: { country: string; city: string }) => {
         try {
-            let query
+            let query,
+                searchBy: T_WeatherDatabaseRecords[number]["searchBy"] = "city"
 
             if (formData.city && !formData.country) {
                 query = formData.city
+                searchBy = "city"
             } else if (formData.city && formData.country) {
                 query = formData.city
+                searchBy = "country"
             } else if (!formData.city && formData.country) {
                 query = formData.country
+                searchBy = "country"
             }
 
             if (!query) {
@@ -152,7 +162,8 @@ export default function YourComponentName(): JSX.Element {
                 isSuccess: true,
                 data: {
                     weather: xhrWeather,
-                    geo: geoData
+                    geo: geoData,
+                    searchBy
                 }
             })
             setWeatherData({
@@ -225,13 +236,36 @@ export default function YourComponentName(): JSX.Element {
                             <SearchHistory
                                 historySources={localStorageItem.data.record}
                                 onClickHistory={async ({ history, e }) => {
+                                    if (history.searchBy === "city") {
+                                        if (
+                                            history.data.weather.name ===
+                                            router.query.city
+                                        )
+                                            return
+                                    } else if (history.searchBy === "country") {
+                                        if (
+                                            history.data.weather.name ===
+                                            router.query.country
+                                        )
+                                            return
+                                    }
+
+                                    formMethods.reset()
                                     router.push({
                                         query: {
-                                            city: history.data.weather.name,
-                                            country:
-                                                history.data.weather.sys.country
+                                            ...(history.searchBy === "city"
+                                                ? {
+                                                      city: history.data.weather
+                                                          .name
+                                                  }
+                                                : {
+                                                      country:
+                                                          history.data.weather
+                                                              .name
+                                                  })
                                         }
                                     })
+
                                     await sleep(10)
                                     formMethods.handleSubmit(onSubmit)(e)
                                 }}
