@@ -1,2 +1,7 @@
-# react-notes
-My personal React.js notes.
+# Open Weather
+
+```bash
+# On root dir level
+
+npm i && npm run dev
+```
