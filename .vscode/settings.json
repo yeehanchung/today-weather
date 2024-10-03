@@ -1,0 +1,29 @@
+{
+    "editor.defaultFormatter": "esbenp.prettier-vscode",
+    "editor.formatOnSave": false,
+    // Runs Prettier, then ESLint
+    "editor.codeActionsOnSave": [
+        "source.formatDocument",
+        "source.fixAll.eslint",
+    ],
+    // https://byby.dev/at-rule-tailwind
+    "css.lint.unknownAtRules": "ignore",
+     "editor.autoClosingBrackets": "always",
+    "[css]": {
+        "editor.defaultFormatter": "rvest.vs-code-prettier-eslint"
+    },
+    "javascript.preferences.importModuleSpecifier": "non-relative",
+    "typescript.preferences.importModuleSpecifier": "non-relative",
+    "javascript.updateImportsOnFileMove.enabled": "always",
+    "typescript.updateImportsOnFileMove.enabled": "always",
+    "[typescript]": {
+        "editor.defaultFormatter": "vscode.typescript-language-features"
+    },
+    "[jsonc]": {
+        "editor.defaultFormatter": "vscode.json-language-features"
+    },
+    "[json]": {
+        "editor.defaultFormatter": "rvest.vs-code-prettier-eslint"
+    },
+    "eslint.enable": true
+}

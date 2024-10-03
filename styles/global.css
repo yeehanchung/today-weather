@@ -1,0 +1,55 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+
+html {
+    font-family: Verdana, Geneva, sans-serif;
+}
+
+html,
+body {
+    line-height: initial;
+    height: 100dvh;
+}
+
+h1,
+h2,
+h3,
+h4,
+h5,
+h6 {
+    margin: 0;
+    padding: 0;
+}
+
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+/**
+ * For outline on key:tab (a11y)
+ */
+a:focus-visible,
+button:focus-visible,
+div:focus-visible {
+    outline: 2px solid black;
+    outline-offset: 3px;
+    z-index: 10;
+}
+
+a {
+    color: black;
+    text-decoration: none;
+}
+
+a:visited {
+    color: black;
+    text-decoration: none;
+}
+
+a:hover {
+    color: #007fff;
+}
